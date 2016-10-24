@@ -5,6 +5,7 @@ from flask.ext.httpauth import HTTPBasicAuth
 from ansible_utils import get_path
 from play_util.AnsiblePlaybook import AnsiblePlaybook
 from tools_util.TracePath import tracePath
+import os
 
 app = Flask(__name__, static_url_path="")
 auth = HTTPBasicAuth()
@@ -111,6 +112,128 @@ def get_postrouters():
   #  temp = request.json['title']
   #  return jsonify({'routers': temp}),201
 
+@app.route('/ansibengine/api/v1.0/altinventory', methods=['POST'])
+@auth.login_required
+def inventory():
+    if not request.json or not 'variable' in request.json or not 'inventory' in request.json:
+        abort(400)
+    variable = request.json['variable']
+    inventory = request.json['inventory']
+    filepath = '/home/davis/Documents/Network-automation/'
+    inventoryfile = filepath+variable
+    target = open(inventoryfile, 'w')
+    target.write('[routerxe]')
+    target.write("\n")
+    target.write(inventory)
+    retdata={"value":"Success"}
+    return jsonify(retdata), 201
+
+@app.route('/ansibengine/api/v1.0/gettraceroute', methods=['POST'])
+@auth.login_required
+def gettraceroute():
+    if not request.json or not 'sourceip' in request.json or not 'destip' in request.json:
+        abort(400)
+    sourceip = request.json['sourceip']
+    destip = request.json['destip']
+    vrf = request.json['vrf']
+#    sourceip=request.args.get('source_ip')
+#    destip=request.args.get('dest_ip')
+#    vrf=''
+#    if request.args.get('vrf') is not None:
+#        vrf=request.args.get('vrf')
+    vrfname=request.json['vrfname']
+    target = open('/home/davis/Documents/Network-automation/tracerouteinv', 'w')
+    target.write('[routerxe]')
+    target.write("\n")
+    target.write(str(sourceip))
+    commands=''
+    if vrf is True:
+        commands='commands: traceroute vrf '+vrfname+' '+str(destip)
+    else:
+        commands='commands: traceroute '+str(destip)
+
+    target = open('/home/davis/Documents/Network-automation/tracecommand.yaml', 'w')
+    target.write('---')
+    target.write("\n")
+    target.write(commands)
+    retdata={'value':"Success"}
+    return jsonify(retdata), 201
+#    return render_template('ansible/traceroute.html', ip=destip)
+
+@app.route('/ansibengine/api/v1.0/runtraceroute', methods=['POST'])
+@auth.login_required
+def runtraceroute():
+#    if not request.json:
+#        abort(400)
+#    t raceip = str(request.json['ip'])
+#    if not request.json or not 'ip' in request.json:
+#    	abort(400)
+#    ip=request.json['ip']
+
+#    traceip=str(request.form['ip'])
+    playbookName = 'tracerouteip.yml'
+    inventory = 'tracerouteinv'
+    stdoutfile = '/etc/ansiblestdout/traceroute.out'
+#        target = open('/home/davis/Documents/Network-automation/tracecommand.yaml', 'w')
+#        target.write('---')
+#        target.write("\n")
+#        target.write('commands: traceroute '+traceip)
+
+        # retdata = {'value':stdoutfile}
+        # target = open('/home/davis/Documents/Network-automation/tracerouteinv', 'w')
+        # target.write('[routerxe]')
+        # target.write("\n")
+        # target.write('10.10.10.102')
+
+    playbook=AnsiblePlaybook(playbookName,inventory,stdoutfile)
+    Output=playbook.runPlaybook()
+    fileRead=open(stdoutfile)
+    Output=fileRead.read()
+    # print Output
+    Output=Output.replace("[0;32m","")
+    Output=Output.replace("[0;31m","")
+    Output=Output.replace("[0m"," ")
+    Output=Output.replace("\x1b"," ")
+    flag=False
+    factname = open('/etc/netbot/factshare.txt','r')
+    factpath = factname.read()
+    if not factpath:
+    	flag=True
+    factfullname = "/etc/ansiblefacts/"+factpath
+
+#        match=re.match(r'.*\s+failed\=[1-9]+\s+.*',str(Output),re.DOTALL)
+    if flag:
+    	outvar="playbook not run. \n"
+    	retdata={'value':outvar}
+    	return jsonify(retdata)
+    else:
+#               factname = open('/etc/netbot/factshare.txt','r')
+#               factpath = factname.read()
+#               factfullname = "/etc/ansiblefacts/"+factpath
+
+
+    	tPath=tracePath('ops.emc-corp.net','svcorionnet@emc-corp.net','$V(0r!0N3t')
+    	rPath=tPath.getPath(factfullname)
+    	outvar=''
+    	if isinstance(rPath, list):
+    		for path in rPath:
+    			outvar=outvar+path
+    			outvar=outvar+"\n"
+    	else:
+      		outvar=rPath
+        # fileRead=open(stdoutfile)
+        # Output=fileRead.read()
+        # # print Output
+        #Output=Output.replace("[0;32m","")
+        #Output=Output.replace("[0;31m","")
+        #Output=Output.replace("[0m"," ")
+        #Output=Output.replace("\x1b"," ")
+     	retdata={'value':outvar}
+     	return jsonify(retdata)
+
+    ret_data={'value':"an error has occured"}
+    return jsonify(ret_data)
+
 
 @app.route('/ansibengine/api/v1.0/resultout', methods=['POST'])
 @auth.login_required
@@ -135,6 +258,33 @@ def get_resultout():
   #  temp = request.json['title']
   #  return jsonify({'routers': temp}),201
 
+@app.route('/ansibengine/api/v1.0/playbooklist', methods=['GET'])
+def playbooklist():
+#    if not request.json or not 'resultid' in request.json:
+#        abort(400)
+#    resultid = request.json['resultid']
+#    stdoutfile = '/etc/ansiblestdout/stdout160.out'
+        # retdata = {'value':stdoutfile}
+        # playbook=AnsiblePlaybook(playbookName,inventory,stdoutfile)
+        # Output=playbook.runPlaybook()
+ #   fileRead=open(stdoutfile)
+ #   Output=fileRead.read()
+        # # print Output
+ #   Output=Output.replace("[0;32m","")
+ #   Output=Output.replace("[0;31m","")
+ #   Output=Output.replace("[0m"," ")
+ #   Output=Output.replace("\x1b"," ")
+    files=[]
+    temp=os.listdir("/home/davis/Documents/Network-automation")
+    for file in temp:
+        if file.endswith(".yml"):
+            files.append(file)
+    temp=['new','another']
+    retdata={'value':files}
+    return jsonify(retdata), 201
+  #  temp=''
+  #  temp = request.json['title']
+  #  return jsonify({'routers': temp}),201
 
 @app.route('/ansibengine/api/v1.0/runplaybook', methods=['POST'])
 @auth.login_required
@@ -145,11 +295,17 @@ def runplaybook():
     playbook = request.json['playbook']
     inventory = request.json['inventory']
     resultid = request.json['resultid']
+    fact = request.json['fact']
     stdoutfilename = "stdout"+resultid+".out"
     stdoutpath = get_path('resultout')
     stdoutfile = stdoutpath+"/"+stdoutfilename
     playbookName = playbook
     inventory = inventory
+    if fact != "nofile":
+    	target = open('/home/davis/Documents/Network-automation/sharedvalues.yaml', 'w')
+    	target.write('---')
+    	target.write("\n")
+    	target.write('guivars: /etc/ansiblefacts/'+fact)
     print "initial"
 #    editresult.outfile = stdoutfile
     # retdata = {'value':stdoutfile}
