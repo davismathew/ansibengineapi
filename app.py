@@ -128,6 +128,112 @@ def inventory():
     retdata={"value":"Success"}
     return jsonify(retdata), 201
 
+@app.route('/ansibengine/api/v1.0/getinterfacetraceroute', methods=['POST'])
+@auth.login_required
+def getinterfacetraceroute():
+    if not request.json or not 'interfaceip' in request.json or not 'destip' in request.json or not 'routerip' in request.json:
+        abort(400)
+    routerip = request.json['routerip']
+    interfaceip = request.json['interfaceip']
+    destip = request.json['destip']
+    vrf = request.json['vrf']
+#    sourceip=request.args.get('source_ip')
+#    destip=request.args.get('dest_ip')
+#    vrf=''
+#    if request.args.get('vrf') is not None:
+#        vrf=request.args.get('vrf')
+    vrfname=request.json['vrfname']
+    target = open('/home/davis/Documents/Network-automation/tracerouteinterfaceinv', 'w')
+    target.write('[routerxe]')
+    target.write("\n")
+    target.write(str(routerip))
+    commands=''
+    if vrf is True:
+        commands='commands: traceroute vrf '+vrfname+' '+str(destip)
+    else:
+        commands='commands: traceroute '+str(destip)+' source '+str(interfaceip)+' numeric'
+
+    target = open('/home/davis/Documents/Network-automation/tracecommandinterface.yaml', 'w')
+    target.write('---')
+    target.write("\n")
+    target.write(commands)
+    retdata={'value':"Success"}
+    return jsonify(retdata), 201
+
+@app.route('/ansibengine/api/v1.0/runinterfacetraceroute', methods=['POST'])
+@auth.login_required
+def runinterfacetraceroute():
+#    if not request.json:
+#        abort(400)
+#    t raceip = str(request.json['ip'])
+#    if not request.json or not 'ip' in request.json:
+#       abort(400)
+#    ip=request.json['ip']
+
+#    traceip=str(request.form['ip'])
+    playbookName = 'tracerouteinterface.yml'
+    inventory = 'tracerouteinterfaceinv'
+    stdoutfile = '/etc/ansiblestdout/interfacetraceroute.out'
+#        target = open('/home/davis/Documents/Network-automation/tracecommand.yaml', 'w')
+#        target.write('---')
+#        target.write("\n")
+#        target.write('commands: traceroute '+traceip)
+
+        # retdata = {'value':stdoutfile}
+        # target = open('/home/davis/Documents/Network-automation/tracerouteinv', 'w')
+        # target.write('[routerxe]')
+        # target.write("\n")
+        # target.write('10.10.10.102')
+
+    playbook=AnsiblePlaybook(playbookName,inventory,stdoutfile)
+    Output=playbook.runPlaybook()
+    fileRead=open(stdoutfile)
+    Output=fileRead.read()
+    # print Output
+    Output=Output.replace("[0;32m","")
+    Output=Output.replace("[0;31m","")
+    Output=Output.replace("[0m"," ")
+    Output=Output.replace("\x1b"," ")
+    flag=False
+    factname = open('/etc/netbot/factshare.txt','r')
+    factpath = factname.read()
+    if not factpath:
+        flag=True
+    factfullname = "/etc/ansiblefacts/"+factpath
+
+#        match=re.match(r'.*\s+failed\=[1-9]+\s+.*',str(Output),re.DOTALL)
+    if flag:
+        outvar="playbook not run. \n"
+        retdata={'value':outvar}
+        return jsonify(retdata)
+    else:
+#               factname = open('/etc/netbot/factshare.txt','r')
+#               factpath = factname.read()
+#               factfullname = "/etc/ansiblefacts/"+factpath
+
+
+        tPath=tracePath('ops.emc-corp.net','svcorionnet@emc-corp.net','$V(0r!0N3t')
+        rPath=tPath.getPath(factfullname)
+        outvar=''
+        if isinstance(rPath, list):
+                for path in rPath:
+                        outvar=outvar+path
+                        outvar=outvar+"\n"
+        else:
+                outvar=rPath
+        # fileRead=open(stdoutfile)
+        # Output=fileRead.read()
+        # # print Output
+        #Output=Output.replace("[0;32m","")
+        #Output=Output.replace("[0;31m","")
+        #Output=Output.replace("[0m"," ")
+        #Output=Output.replace("\x1b"," ")
+        retdata={'value':outvar}
+        return jsonify(retdata)
+
+    ret_data={'value':"an error has occured"}
+    return jsonify(ret_data)
+
 @app.route('/ansibengine/api/v1.0/gettraceroute', methods=['POST'])
 @auth.login_required
 def gettraceroute():
@@ -286,6 +392,21 @@ def playbooklist():
   #  temp = request.json['title']
   #  return jsonify({'routers': temp}),201
 
+@app.route('/ansibengine/api/v1.0/sharefact', methods=['POST'])
+@auth.login_required
+def sharefact():
+    if not request.json or not 'fact' in request.json:
+        abort(400)
+    fact = request.json['fact']
+    if fact != "nofile":
+        target = open('/home/davis/Documents/Network-automation/sharedvalues.yaml', 'w')
+        target.write('---')
+        target.write("\n")
+        target.write('guivars: /etc/ansiblefacts/'+str(fact))
+    Output="Success"
+    retdata={'value':Output}
+    return jsonify(retdata), 201
+
 @app.route('/ansibengine/api/v1.0/runplaybook', methods=['POST'])
 @auth.login_required
 def runplaybook():
@@ -295,17 +416,17 @@ def runplaybook():
     playbook = request.json['playbook']
     inventory = request.json['inventory']
     resultid = request.json['resultid']
-    fact = request.json['fact']
+#    fact = request.json['fact']
     stdoutfilename = "stdout"+resultid+".out"
     stdoutpath = get_path('resultout')
     stdoutfile = stdoutpath+"/"+stdoutfilename
     playbookName = playbook
     inventory = inventory
-    if fact != "nofile":
-    	target = open('/home/davis/Documents/Network-automation/sharedvalues.yaml', 'w')
-    	target.write('---')
-    	target.write("\n")
-    	target.write('guivars: /etc/ansiblefacts/'+fact)
+#    if fact != "nofile":
+#    	target = open('/home/davis/Documents/Network-automation/sharedvalues.yaml', 'w')
+#    	target.write('---')
+#    	target.write("\n")
+#    	target.write('guivars: /etc/ansiblefacts/'+str(fact))
     print "initial"
 #    editresult.outfile = stdoutfile
     # retdata = {'value':stdoutfile}
