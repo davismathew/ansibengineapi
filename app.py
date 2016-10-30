@@ -5,6 +5,7 @@ from flask.ext.httpauth import HTTPBasicAuth
 from ansible_utils import get_path
 from play_util.AnsiblePlaybook import AnsiblePlaybook
 from tools_util.TracePath import tracePath
+from tools_util.loadconfig import get_path
 import os
 
 app = Flask(__name__, static_url_path="")
@@ -119,7 +120,8 @@ def inventory():
         abort(400)
     variable = request.json['variable']
     inventory = request.json['inventory']
-    filepath = '/home/davis/Documents/Network-automation/'
+    tempfilepath = get_path('basepath')
+    filepath = tempfilepath + '/Network-automation/'
     inventoryfile = filepath+variable
     target = open(inventoryfile, 'w')
     target.write('[routerxe]')
@@ -143,7 +145,8 @@ def getinterfacetraceroute():
 #    if request.args.get('vrf') is not None:
 #        vrf=request.args.get('vrf')
     vrfname=request.json['vrfname']
-    target = open('/home/davis/Documents/Network-automation/tracerouteinterfaceinv', 'w')
+    tempfilepath = get_path('basepath')
+    target = open(tempfilepath + '/Network-automation/tracerouteinterfaceinv', 'w')
     target.write('[routerxe]')
     target.write("\n")
     target.write(str(routerip))
@@ -153,7 +156,7 @@ def getinterfacetraceroute():
     else:
         commands='commands: traceroute '+str(destip)+' source '+str(interfaceip)+' numeric'
 
-    target = open('/home/davis/Documents/Network-automation/tracecommandinterface.yaml', 'w')
+    target = open(tempfilepath + '/Network-automation/tracecommandinterface.yaml', 'w')
     target.write('---')
     target.write("\n")
     target.write(commands)
@@ -248,7 +251,8 @@ def gettraceroute():
 #    if request.args.get('vrf') is not None:
 #        vrf=request.args.get('vrf')
     vrfname=request.json['vrfname']
-    target = open('/home/davis/Documents/Network-automation/tracerouteinv', 'w')
+    tempfilepath = get_path('basepath')
+    target = open(tempfilepath + '/Network-automation/tracerouteinv', 'w')
     target.write('[routerxe]')
     target.write("\n")
     target.write(str(sourceip))
@@ -258,7 +262,7 @@ def gettraceroute():
     else:
         commands='commands: traceroute '+str(destip)
 
-    target = open('/home/davis/Documents/Network-automation/tracecommand.yaml', 'w')
+    target = open(tempfilepath + '/Network-automation/tracecommand.yaml', 'w')
     target.write('---')
     target.write("\n")
     target.write(commands)
@@ -390,7 +394,8 @@ def playbooklist():
  #   Output=Output.replace("[0m"," ")
  #   Output=Output.replace("\x1b"," ")
     files=[]
-    temp=os.listdir("/home/davis/Documents/Network-automation")
+    tempfilepath = get_path('basepath')
+    temp=os.listdir(tempfilepath + "/Network-automation")
     for file in temp:
         if file.endswith(".yml"):
             files.append(file)
@@ -407,8 +412,9 @@ def sharefact():
     if not request.json or not 'fact' in request.json:
         abort(400)
     fact = request.json['fact']
+    tempfilepath = get_path('basepath')
     if fact != "nofile":
-        target = open('/home/davis/Documents/Network-automation/sharedvalues.yaml', 'w')
+        target = open(tempfilepath + '/Network-automation/sharedvalues.yaml', 'w')
         target.write('---')
         target.write("\n")
         target.write('guivars: /etc/ansiblefacts/'+str(fact))
