@@ -319,7 +319,9 @@ def runtraceroute():
 
 
     	tPath=tracePath('ops.emc-corp.net','svcorionnet@emc-corp.net','$V(0r!0N3t')
-    	rPath=tPath.getPath(factfullname)
+#    	rPath=tPath.getPath(factfullname)
+	rPath = tPath.getNodeNamePath(factfullname)
+	nPath = tPath.getIPPath(factfullname)
     	outvar=''
     	if isinstance(rPath, list):
     		for path in rPath:
@@ -327,6 +329,13 @@ def runtraceroute():
     			outvar=outvar+"\n"
     	else:
       		outvar=rPath
+	outvar1=''
+	if isinstance(nPath,list):
+		for path in nPath:
+			outvar1=outvar1+path
+			outvar1=outvar1+"\n"
+	else:
+		outvar1=nPath
         # fileRead=open(stdoutfile)
         # Output=fileRead.read()
         # # print Output
@@ -334,7 +343,7 @@ def runtraceroute():
         #Output=Output.replace("[0;31m","")
         #Output=Output.replace("[0m"," ")
         #Output=Output.replace("\x1b"," ")
-     	retdata={'value':outvar}
+     	retdata={'value':outvar,'ipath':outvar1}
      	return jsonify(retdata)
 
     ret_data={'value':"an error has occured"}
