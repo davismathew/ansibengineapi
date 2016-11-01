@@ -7,6 +7,10 @@ from play_util.AnsiblePlaybook import AnsiblePlaybook
 from tools_util.TracePath import tracePath
 from tools_util.loadconfig import get_path
 import os
+import stat
+import fcntl
+import sys
+import subprocess
 
 app = Flask(__name__, static_url_path="")
 auth = HTTPBasicAuth()
@@ -113,6 +117,38 @@ def get_postrouters():
   #  temp = request.json['title']
   #  return jsonify({'routers': temp}),201
 
+@app.route('/ansibengine/api/v1.0/lockfile', methods=['POST'])
+@auth.login_required
+def lockfile():
+    if not request.json or not 'filename' in request.json:
+        abort(400)
+    filename = request.json['filename']
+    flag = 'False'
+#    lock_filename = filename
+#    lock_file = open(lock_filename, 'w')
+
+ #   try:
+ #   	fcntl.lockf(lock_file, fcntl.LOCK_EX | fcntl.LOCK_NB)
+#	flag='True'
+#	fcntl.flock(lock_file, fcntl.LOCK_UN)
+#    except IOError:
+#    	print('Cannot lock: ' + lock_filename)
+#	flag='False'
+#    	sys.exit(1)
+#    subprocess.call(['chmod', '0777', 'sample.txt'])
+    path='/home/davis/Documents/ansibleapi/'
+    st= os.stat(path+'sample.txt')
+    mode=''
+    mode = st.st_mode
+    if int(st.st_mode) == int('33279'):
+    	mode=st.st_mode
+    	flag = 'True'
+    
+#    print('Locked! Running code...')
+
+    retdata={"value":flag}
+    return jsonify(retdata), 201
+
 @app.route('/ansibengine/api/v1.0/altinventory', methods=['POST'])
 @auth.login_required
 def inventory():
@@ -215,15 +251,24 @@ def runinterfacetraceroute():
 #               factfullname = "/etc/ansiblefacts/"+factpath
 
 
-        tPath=tracePath('ops.emc-corp.net','svcorionnet@emc-corp.net','$V(0r!0N3t')
-        rPath=tPath.getPath(factfullname)
-        outvar=''
-        if isinstance(rPath, list):
-                for path in rPath:
-                        outvar=outvar+path
-                        outvar=outvar+"\n"
-        else:
-                outvar=rPath
+    	tPath=tracePath('ops.emc-corp.net','svcorionnet@emc-corp.net','$V(0r!0N3t')
+#    	rPath=tPath.getPath(factfullname)
+	rPath = tPath.getNodeNamePath(factfullname)
+	nPath = tPath.getIPPath(factfullname)
+    	outvar=''
+    	if isinstance(rPath, list):
+    		for path in rPath:
+    			outvar=outvar+path
+    			outvar=outvar+"\n"
+    	else:
+      		outvar=rPath
+	outvar1=''
+	if isinstance(nPath,list):
+		for path in nPath:
+			outvar1=outvar1+path
+			outvar1=outvar1+"\n"
+	else:
+		outvar1=nPath
         # fileRead=open(stdoutfile)
         # Output=fileRead.read()
         # # print Output
@@ -231,7 +276,7 @@ def runinterfacetraceroute():
         #Output=Output.replace("[0;31m","")
         #Output=Output.replace("[0m"," ")
         #Output=Output.replace("\x1b"," ")
-        retdata={'value':outvar}
+        retdata={'value':outvar,'ipath':outvar1}
         return jsonify(retdata)
 
     ret_data={'value':"an error has occured"}
@@ -245,6 +290,7 @@ def gettraceroute():
     sourceip = request.json['sourceip']
     destip = request.json['destip']
     vrf = request.json['vrf']
+    status="Another task is in progress"
 #    sourceip=request.args.get('source_ip')
 #    destip=request.args.get('dest_ip')
 #    vrf=''
@@ -252,21 +298,32 @@ def gettraceroute():
 #        vrf=request.args.get('vrf')
     vrfname=request.json['vrfname']
     tempfilepath = get_path('basepath')
-    target = open(tempfilepath + '/Network-automation/tracerouteinv', 'w')
-    target.write('[routerxe]')
-    target.write("\n")
-    target.write(str(sourceip))
+#    subprocess.call(['chmod', '0777', 'sample.txt'])
+    st= os.stat(tempfilepath + '/Network-automation/tracerouteinv')
+
+    if int(st.st_mode) == int('33279'):
+    	subprocess.call(['chmod', '0644', tempfilepath + '/Network-automation/tracerouteinv'])
+    	target = open(tempfilepath + '/Network-automation/tracerouteinv', 'w')
+   	target.write('[routerxe]')
+    	target.write("\n")
+    	target.write(str(sourceip))
+	status = "Success"
     commands=''
     if vrf is True:
         commands='commands: traceroute vrf '+vrfname+' '+str(destip)
     else:
         commands='commands: traceroute '+str(destip)
 
-    target = open(tempfilepath + '/Network-automation/tracecommand.yaml', 'w')
-    target.write('---')
-    target.write("\n")
-    target.write(commands)
-    retdata={'value':"Success"}
+    commandmode= os.stat(tempfilepath + '/Network-automation/tracecommand.yaml')
+    if int(commandmode.st_mode) == int('33279'):
+    	subprocess.call(['chmod', '0644',tempfilepath + '/Network-automation/tracecommand.yaml'])
+    	target = open(tempfilepath + '/Network-automation/tracecommand.yaml', 'w')
+    	target.write('---')
+    	target.write("\n")
+    	target.write(commands)
+	status = "Success"
+
+    retdata={'value':status}
     return jsonify(retdata), 201
 #    return render_template('ansible/traceroute.html', ip=destip)
 
@@ -294,7 +351,9 @@ def runtraceroute():
         # target.write('[routerxe]')
         # target.write("\n")
         # target.write('10.10.10.102')
-
+    tempfilepath = get_path('basepath')
+    subprocess.call(['chmod', '0777', tempfilepath + '/Network-automation/tracerouteinv'])
+    subprocess.call(['chmod', '0777',tempfilepath + '/Network-automation/tracecommand.yaml'])
     playbook=AnsiblePlaybook(playbookName,inventory,stdoutfile)
     Output=playbook.runPlaybook()
     fileRead=open(stdoutfile)
