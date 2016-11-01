@@ -175,6 +175,7 @@ def getinterfacetraceroute():
     interfaceip = request.json['interfaceip']
     destip = request.json['destip']
     vrf = request.json['vrf']
+    status="Another task is in progress"
 #    sourceip=request.args.get('source_ip')
 #    destip=request.args.get('dest_ip')
 #    vrf=''
@@ -182,21 +183,31 @@ def getinterfacetraceroute():
 #        vrf=request.args.get('vrf')
     vrfname=request.json['vrfname']
     tempfilepath = get_path('basepath')
-    target = open(tempfilepath + '/Network-automation/tracerouteinterfaceinv', 'w')
-    target.write('[routerxe]')
-    target.write("\n")
-    target.write(str(routerip))
+
+    st= os.stat(tempfilepath + '/Network-automation/tracerouteinterfaceinv')
+    if int(st.st_mode) == int('33279'):
+    	subprocess.call(['chmod', '0644', tempfilepath + '/Network-automation/tracerouteinterfaceinv'])
+    	target = open(tempfilepath + '/Network-automation/tracerouteinterfaceinv', 'w')
+    	target.write('[routerxe]')
+    	target.write("\n")
+    	target.write(str(routerip))
+	status = "Success"
     commands=''
     if vrf is True:
         commands='commands: traceroute vrf '+vrfname+' '+str(destip)
     else:
         commands='commands: traceroute '+str(destip)+' source '+str(interfaceip)+' numeric'
 
-    target = open(tempfilepath + '/Network-automation/tracecommandinterface.yaml', 'w')
-    target.write('---')
-    target.write("\n")
-    target.write(commands)
-    retdata={'value':"Success"}
+    commandmode= os.stat(tempfilepath + '/Network-automation/tracecommandinterface.yaml')
+    if int(commandmode.st_mode) == int('33279'):
+    	subprocess.call(['chmod', '0644',tempfilepath + '/Network-automation/tracecommandinterface.yaml'])
+    	target = open(tempfilepath + '/Network-automation/tracecommandinterface.yaml', 'w')
+    	target.write('---')
+    	target.write("\n")
+    	target.write(commands)
+	status = "Success"
+
+    retdata={'value':status}
     return jsonify(retdata), 201
 
 @app.route('/ansibengine/api/v1.0/runinterfacetraceroute', methods=['POST'])
@@ -224,6 +235,9 @@ def runinterfacetraceroute():
         # target.write("\n")
         # target.write('10.10.10.102')
 
+    tempfilepath = get_path('basepath')
+    subprocess.call(['chmod', '0777', tempfilepath + '/Network-automation/tracerouteinterfaceinv'])
+    subprocess.call(['chmod', '0777',tempfilepath + '/Network-automation/tracecommandinterface.yaml'])
     playbook=AnsiblePlaybook(playbookName,inventory,stdoutfile)
     Output=playbook.runPlaybook()
     fileRead=open(stdoutfile)
