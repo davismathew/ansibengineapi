@@ -176,6 +176,7 @@ def getinterfacetraceroute():
     destip = request.json['destip']
     vrf = request.json['vrf']
     status="Another task is in progress"
+    statuscode = 200
 #    sourceip=request.args.get('source_ip')
 #    destip=request.args.get('dest_ip')
 #    vrf=''
@@ -192,6 +193,7 @@ def getinterfacetraceroute():
     	target.write("\n")
     	target.write(str(routerip))
 	status = "Success"
+	statuscode = 201
     commands=''
     if vrf is True:
         commands='commands: traceroute vrf '+vrfname+' '+str(destip)
@@ -206,9 +208,9 @@ def getinterfacetraceroute():
     	target.write("\n")
     	target.write(commands)
 	status = "Success"
-
+	statuscode = 201
     retdata={'value':status}
-    return jsonify(retdata), 201
+    return jsonify(retdata), statuscode
 
 @app.route('/ansibengine/api/v1.0/runinterfacetraceroute', methods=['POST'])
 @auth.login_required
@@ -305,6 +307,7 @@ def gettraceroute():
     destip = request.json['destip']
     vrf = request.json['vrf']
     status="Another task is in progress"
+    statuscode = 200
 #    sourceip=request.args.get('source_ip')
 #    destip=request.args.get('dest_ip')
 #    vrf=''
@@ -322,6 +325,8 @@ def gettraceroute():
     	target.write("\n")
     	target.write(str(sourceip))
 	status = "Success"
+        statuscode = 201
+
     commands=''
     if vrf is True:
         commands='commands: traceroute vrf '+vrfname+' '+str(destip)
@@ -336,9 +341,10 @@ def gettraceroute():
     	target.write("\n")
     	target.write(commands)
 	status = "Success"
+	statuscode = 201
 
     retdata={'value':status}
-    return jsonify(retdata), 201
+    return jsonify(retdata), statuscode
 #    return render_template('ansible/traceroute.html', ip=destip)
 
 @app.route('/ansibengine/api/v1.0/runtraceroute', methods=['POST'])
@@ -383,7 +389,6 @@ def runtraceroute():
     if not factpath:
     	flag=True
     factfullname = "/etc/ansiblefacts/"+factpath
-
 #        match=re.match(r'.*\s+failed\=[1-9]+\s+.*',str(Output),re.DOTALL)
     if flag:
     	outvar="playbook not run. \n"
