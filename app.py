@@ -358,6 +358,7 @@ def runtraceroute():
 #    ip=request.json['ip']
 
 #    traceip=str(request.form['ip'])
+
     playbookName = 'tracerouteip.yml'
     inventory = 'tracerouteinv'
     stdoutfile = '/etc/ansiblestdout/traceroute.out'
@@ -378,7 +379,7 @@ def runtraceroute():
     Output=playbook.runPlaybook()
     fileRead=open(stdoutfile)
     Output=fileRead.read()
-    # print Output
+
     Output=Output.replace("[0;32m","")
     Output=Output.replace("[0;31m","")
     Output=Output.replace("[0m"," ")
@@ -404,6 +405,7 @@ def runtraceroute():
 #    	rPath=tPath.getPath(factfullname)
 	rPath = tPath.getNodeNamePath(factfullname)
 	nPath = tPath.getIPPath(factfullname)
+
     	outvar=''
     	if isinstance(rPath, list):
     		for path in rPath:
@@ -411,6 +413,7 @@ def runtraceroute():
     			outvar=outvar+"\n"
     	else:
       		outvar=rPath
+
 	outvar1=''
 	if isinstance(nPath,list):
 		for path in nPath:
@@ -418,6 +421,7 @@ def runtraceroute():
 			outvar1=outvar1+"\n"
 	else:
 		outvar1=nPath
+
         # fileRead=open(stdoutfile)
         # Output=fileRead.read()
         # # print Output
