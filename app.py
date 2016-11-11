@@ -495,10 +495,10 @@ def checkipam():
     	abort(400)
     destip = request.json['destip']
     ipamobj = IPAMCheck()
-    ipamobj.intializeLoggerModule('IPAMIPCeck.log','IPCheck')
+    ipamobj.intializeLoggerModule('IPAMIPCheck.log','IPCheck')
    # output = ipamobj.checkIPAMIP('10.10.10.70','172.16.10.1')
-#    output = ipamobj.checkOnRouterandIPAM('10.10.10.70',destip)
-    retdata={'value':destip}
+    output = ipamobj.checkOnRouterandIPAM('10.10.10.70',destip)
+    retdata={'value':output}
     return jsonify(retdata), 200
 
 @app.route('/ansibengine/api/v1.0/sharefact', methods=['POST'])
