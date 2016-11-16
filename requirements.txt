@@ -1,2 +1,6 @@
 flask
 flask-httpauth==3.2.1
+cling==2.3.2
+netaddr==0.7.18
+sqlalchemy==1.1.4
+ipcalc==1.99.0
