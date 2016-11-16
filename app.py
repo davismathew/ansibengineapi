@@ -6,6 +6,7 @@ from ansible_utils import get_path
 from play_util.AnsiblePlaybook import AnsiblePlaybook
 from tools_util.TracePath import tracePath
 from tools_util.loadconfig import get_path
+from ipam_utils.IPAMCheck import IPAMCheck
 import os
 import stat
 import fcntl
@@ -487,6 +488,18 @@ def playbooklist():
   #  temp=''
   #  temp = request.json['title']
   #  return jsonify({'routers': temp}),201
+@app.route('/ansibengine/api/v1.0/checkipam', methods=['POST'])
+@auth.login_required
+def checkipam():
+    if not request.json or not 'destip' in request.json:
+    	abort(400)
+    destip = request.json['destip']
+    ipamobj = IPAMCheck()
+    ipamobj.intializeLoggerModule('IPAMIPCheck.log','IPCheck')
+   # output = ipamobj.checkIPAMIP('10.10.10.70','172.16.10.1')
+    output = ipamobj.checkOnRouterandIPAM('10.10.10.70',destip)
+    retdata={'value':output}
+    return jsonify(retdata), 200
 
 @app.route('/ansibengine/api/v1.0/sharefact', methods=['POST'])
 @auth.login_required
