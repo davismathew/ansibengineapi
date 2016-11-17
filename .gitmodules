@@ -1,0 +1,3 @@
+[submodule "networkautlib"]
+	path = networkautlib
+	url = https://github.com/davismathew/networkautlib.git

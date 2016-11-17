@@ -2,11 +2,12 @@
 from flask import Flask, jsonify, abort, request, make_response, url_for
 from flask.ext.httpauth import HTTPBasicAuth
 #from pingTest import pingTest
-from ansible_utils import get_path
+#from ansible_utils import get_path
 from play_util.AnsiblePlaybook import AnsiblePlaybook
 from tools_util.TracePath import tracePath
-from tools_util.loadconfig import get_path
+from load_config import get_vars
 from ipam_utils.IPAMCheck import IPAMCheck
+import constants
 import os
 import stat
 import fcntl
@@ -157,7 +158,7 @@ def inventory():
         abort(400)
     variable = request.json['variable']
     inventory = request.json['inventory']
-    tempfilepath = get_path('basepath')
+    tempfilepath = get_vars('basepath')
     filepath = tempfilepath + '/Network-automation/'
     inventoryfile = filepath+variable
     target = open(inventoryfile, 'w')
@@ -184,7 +185,7 @@ def getinterfacetraceroute():
 #    if request.args.get('vrf') is not None:
 #        vrf=request.args.get('vrf')
     vrfname=request.json['vrfname']
-    tempfilepath = get_path('basepath')
+    tempfilepath = get_vars('basepath')
 
     st= os.stat(tempfilepath + '/Network-automation/tracerouteinterfaceinv')
     if int(st.st_mode) == int('33279'):
@@ -238,7 +239,7 @@ def runinterfacetraceroute():
         # target.write("\n")
         # target.write('10.10.10.102')
 
-    tempfilepath = get_path('basepath')
+    tempfilepath = get_vars('basepath')
     subprocess.call(['chmod', '0777', tempfilepath + '/Network-automation/tracerouteinterfaceinv'])
     subprocess.call(['chmod', '0777',tempfilepath + '/Network-automation/tracecommandinterface.yaml'])
     playbook=AnsiblePlaybook(playbookName,inventory,stdoutfile)
@@ -315,7 +316,7 @@ def gettraceroute():
 #    if request.args.get('vrf') is not None:
 #        vrf=request.args.get('vrf')
     vrfname=request.json['vrfname']
-    tempfilepath = get_path('basepath')
+    tempfilepath = get_vars('basepath')
 #    subprocess.call(['chmod', '0777', 'sample.txt'])
     st= os.stat(tempfilepath + '/Network-automation/tracerouteinv')
 
@@ -373,7 +374,7 @@ def runtraceroute():
         # target.write('[routerxe]')
         # target.write("\n")
         # target.write('10.10.10.102')
-    tempfilepath = get_path('basepath')
+    tempfilepath = get_vars('basepath')
     subprocess.call(['chmod', '0777', tempfilepath + '/Network-automation/tracerouteinv'])
     subprocess.call(['chmod', '0777',tempfilepath + '/Network-automation/tracecommand.yaml'])
     playbook=AnsiblePlaybook(playbookName,inventory,stdoutfile)
@@ -477,7 +478,7 @@ def playbooklist():
  #   Output=Output.replace("[0m"," ")
  #   Output=Output.replace("\x1b"," ")
     files=[]
-    tempfilepath = get_path('basepath')
+    tempfilepath = get_vars('basepath')
     temp=os.listdir(tempfilepath + "/Network-automation")
     for file in temp:
         if file.endswith(".yml"):
@@ -507,7 +508,7 @@ def sharefact():
     if not request.json or not 'fact' in request.json:
         abort(400)
     fact = request.json['fact']
-    tempfilepath = get_path('basepath')
+    tempfilepath = get_vars('basepath')
     if fact != "nofile":
         target = open(tempfilepath + '/Network-automation/sharedvalues.yaml', 'w')
         target.write('---')
@@ -528,7 +529,7 @@ def runplaybook():
     resultid = request.json['resultid']
 #    fact = request.json['fact']
     stdoutfilename = "stdout"+resultid+".out"
-    stdoutpath = get_path('resultout')
+    stdoutpath = get_vars('resultout')
     stdoutfile = stdoutpath+"/"+stdoutfilename
     playbookName = playbook
     inventory = inventory
