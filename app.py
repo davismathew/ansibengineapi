@@ -5,7 +5,7 @@ from flask.ext.httpauth import HTTPBasicAuth
 #from ansible_utils import get_path
 from play_util.AnsiblePlaybook import AnsiblePlaybook
 from tools_util.TracePath import tracePath
-from load_config import get_vars
+from loadconfig import get_vars
 from ipam_utils.IPAMCheck import IPAMCheck
 import constants
 import os
