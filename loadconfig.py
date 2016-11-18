@@ -1,5 +1,6 @@
 import os
 import ConfigParser
+import constants
 
 def readconf():
     config = ConfigParser.ConfigParser()
@@ -20,15 +21,13 @@ def project_path(type):
 def get_vars(type):
     config = readconf()
     if type == 'project':
-        vars = config.get(ENVIRONMENT, 'project_path')
+        vars = config.get(constants.ENVIRONMENT, 'project_path')
     elif type == 'play':
-        vars = config.get(ENVIRONMENT, 'project_path')
+        vars = config.get(constants.ENVIRONMENT, 'project_path')
     elif type == 'resultout':
-        vars = config.get(ENVIRONMENT, 'result_path')
+        vars = config.get(constants.ENVIRONMENT, 'result_path')
     elif type == 'baseurl':
-        vars = config.get(ENVIRONMENT, 'baseurl')
-    elif type == 'ansibengineemc':
-        vars = config.get(ENVIRONMENT, 'ansibengineemc')
-    elif type == 'ansibenginemtn':
-        vars = config.get(ENVIRONMENT, 'ansibenginemtn')
+        vars = config.get(constants.ENVIRONMENT, 'baseurl')
+    elif type == 'basepath':
+        vars = config.get(constants.ENVIRONMENT, 'basepath')
     return vars
