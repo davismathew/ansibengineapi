@@ -159,7 +159,7 @@ def inventory():
     variable = request.json['variable']
     inventory = request.json['inventory']
     tempfilepath = get_vars('basepath')
-    filepath = tempfilepath + '/Network-automation/'
+    filepath = tempfilepath + '/Network-automation/inventorydir/'
     inventoryfile = filepath+variable
     target = open(inventoryfile, 'w')
     target.write('[routerxe]')
@@ -541,7 +541,7 @@ def runplaybook():
     print "initial"
 #    editresult.outfile = stdoutfile
     # retdata = {'value':stdoutfile}
-    playbookinst=AnsiblePlaybook(playbookName,inventory,stdoutfile)
+    playbookinst=AnsiblePlaybook(playbookName,'inventorydir/'+inventory,stdoutfile)
     Output=playbookinst.runPlaybook()
     fileRead=open(stdoutfile)
     Output=fileRead.read()
