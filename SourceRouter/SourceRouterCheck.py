@@ -218,7 +218,24 @@ class SourceRouterCheck:
 						return "Running command on Router got failed.So skipped source router finding process.Process stopped at "+hostname+" router"
 					    elif "Yes" in str(cRouter):
 						log.info('Source Router IP:  %s and router handle %s',str(hostname),str(rHandler))
-						return hostname
+						command='traceroute '+str(shvrfIP)
+						output=self.runCommand(rHandler,command,hostname)
+						if "Errorrun" in str(output):
+						    log.warning("Running command on Router got failed")
+						    return "Running command on Router got failed.So skipped source router finding process.Process stopped at "+hostname+" router"
+						else:
+						    log.info('%s Command output %s',str(command),str(output))
+						    template=open("traceroute.txtfsm")
+						    re_table=textfsm.TextFSM(template)
+						    traceroute=re_table.ParseText(output)
+						    print "traceroute",traceroute
+						    tPath=stracePath('ops.emc-corp.net','svcorionnet@emc-corp.net','$V(0r!0N3t')
+						    nPath=tPath.getNodeNamePath(traceroute)
+						    print "Npath",nPath
+						    rPath=tPath.getIPPath(traceroute)
+						    print "rpath ",rPath
+						    return rPath						
+						#return hostname
 					    elif "No" in str(cRouter):
 						PEAddress=self.parsingShowIPRouter(output,command)
 						if "ErrorParser" in str(PEAddress):
@@ -291,7 +308,24 @@ class SourceRouterCheck:
 				    return "Running command on Router got failed.So skipped source router finding process.Process stopped at "+hostname+" router"
 				elif "Yes" in str(cRouter):
 				    log.info('Source Router IP:  %s and router handle %s',str(hostname),str(rHandler))
-				    return hostname
+				    command='traceroute '+str(shvrfIP)
+				    output=self.runCommand(rHandler,command,hostname)
+				    if "Errorrun" in str(output):
+					log.warning("Running command on Router got failed")
+					return "Running command on Router got failed.So skipped source router finding process.Process stopped at "+hostname+" router"
+				    else:
+					log.info('%s Command output %s',str(command),str(output))
+					template=open("traceroute.txtfsm")
+					re_table=textfsm.TextFSM(template)
+					traceroute=re_table.ParseText(output)
+					print "traceroute",traceroute
+					tPath=stracePath('ops.emc-corp.net','svcorionnet@emc-corp.net','$V(0r!0N3t')
+					nPath=tPath.getNodeNamePath(traceroute)
+					print "Npath",nPath
+					rPath=tPath.getIPPath(traceroute)
+					print "rpath ",rPath
+					return rPath					    
+				    #return hostname
 				elif "No" in str(cRouter):
 				    PEAddress=self.parsingShowIPRouter(output,command)
 				    if "ErrorParser" in str(PEAddress):

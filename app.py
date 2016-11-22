@@ -7,6 +7,7 @@ from play_util.AnsiblePlaybook import AnsiblePlaybook
 from tools_util.TracePath import tracePath
 from loadconfig import get_vars
 from ipam_utils.IPAMCheck import IPAMCheck
+#from ios_command.RouterCommand import RouterCommand
 import constants
 import os
 import stat

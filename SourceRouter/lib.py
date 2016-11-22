@@ -1,7 +1,7 @@
 #! /usr/bin/env python
 
 #*--------------------------------------------------------------
-#* common.py
+#* lib.py
 #*
 #*--------------------------------------------------------------
 #*@author:Gowdhaman Mohan
@@ -26,8 +26,8 @@ class lib:
                 
     @staticmethod
     def getRouterCredentials():
-        username = "madhan.endla"
-        password = "Srirama2498!"
+        username = "pavijay"
+        password = "WAnoharan!123"
         return username,password
     
            
