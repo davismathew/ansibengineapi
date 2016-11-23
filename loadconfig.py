@@ -30,4 +30,20 @@ def get_vars(type):
         vars = config.get(constants.ENVIRONMENT, 'baseurl')
     elif type == 'basepath':
         vars = config.get(constants.ENVIRONMENT, 'basepath')
+    elif type == 'tracerouterusername':
+	vars = config.get(constants.ENVIRONMENT, 'tracerouterusername')
+    elif type == 'tracerouterpass':
+	vars = config.get(constants.ENVIRONMENT, 'tracerouterpass')
+    elif type == 'orionusername':
+        vars = config.get(constants.ENVIRONMENT, 'orionusername')
+    elif type == 'orionpass':
+        vars = config.get(constants.ENVIRONMENT, 'orionpass')
+    elif type == 'orionurl':
+        vars = config.get(constants.ENVIRONMENT, 'orionurl')
+    elif type == 'ipamsource':
+        vars = config.get(constants.ENVIRONMENT, 'ipamsource')
+    elif type == 'ipamrouterusername':
+        vars = config.get(constants.ENVIRONMENT, 'ipamrouterusername')
+    elif type == 'ipamrouterpass':
+        vars = config.get(constants.ENVIRONMENT, 'ipamrouterpass')
     return vars

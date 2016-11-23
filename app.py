@@ -7,7 +7,7 @@ from play_util.AnsiblePlaybook import AnsiblePlaybook
 from tools_util.TracePath import tracePath
 from loadconfig import get_vars
 from ipam_utils.IPAMCheck import IPAMCheck
-#from ios_command.RouterCommand import RouterCommand
+from ios_command.RouterCommand import RouterCommand
 import constants
 import os
 import stat
@@ -497,9 +497,9 @@ def checkipam():
     	abort(400)
     destip = request.json['destip']
     ipamobj = IPAMCheck()
-    ipamobj.intializeLoggerModule('IPAMIPCheck.log','IPCheck')
+#    ipamobj.intializeLoggerModule('IPAMIPCheck.log','IPCheck')
    # output = ipamobj.checkIPAMIP('10.10.10.70','172.16.10.1')
-    output = ipamobj.checkOnRouterandIPAM('10.10.10.70',destip)
+    output = ipamobj.checkOnRouterandIPAM(get_vars('ipamsource'),destip,get_vars('ipamrouterusername'),get_vars('ipamrouterpass'))
     retdata={'value':output}
     return jsonify(retdata), 200
 
@@ -554,6 +554,105 @@ def runplaybook():
     Output=Output.replace("\x1b"," ")
     retdata={'value':Output}
     return jsonify(retdata), 201
+
+@app.route('/ansibengine/api/v1.0/runtrace', methods=['POST'])
+@auth.login_required
+def runtrace():
+    if not request.json or not 'sourceip' in request.json or not 'destip' in request.json:
+        abort(400)
+    sourceip = request.json['sourceip']
+    destip = request.json['destip']
+    vrf = request.json['vrf']
+    vrfname=request.json['vrfname']
+    commands=''
+    if vrf is True:
+        commands='traceroute vrf '+vrfname+' '+str(destip)
+    else:
+        commands='traceroute '+str(destip)
+
+    obj = RouterCommand(sourceip,commands,get_vars('tracerouterusername'),get_vars('tracerouterpass'))
+#    print obj.gencmdoutput() 
+    tempout=[]
+    tempout = obj.gencmdoutput()
+
+
+    tPath=tracePath(get_vars('orionurl'),get_vars('orionusername'),get_vars('orionpass'))
+
+    rPath = tPath.getNodeDetails(tempout,True)
+    nPath = tPath.getNodeDetails(tempout,False)
+    outvar=''
+    if isinstance(rPath, list):
+    	for path in rPath:
+        	outvar=outvar+path
+                outvar=outvar+"\n"
+    else:
+    	outvar=rPath
+
+    outvar1=''
+    if isinstance(nPath,list):
+    	for path in nPath:
+        	outvar1=outvar1+path
+                outvar1=outvar1+"\n"
+    else:
+    	outvar1=nPath
+
+
+    retdata={'value':outvar,'ipath':outvar1}
+    return jsonify(retdata), 201
+#    retdata={'value':tempout}
+#    return jsonify(retdata), 201
+
+@app.route('/ansibengine/api/v1.0/runinterfacetrace', methods=['POST'])
+@auth.login_required
+def runinterfacetrace():
+    if not request.json or not 'interfaceip' in request.json or not 'destip' in request.json or not 'routerip' in request.json:
+        abort(400)
+
+    routerip = request.json['routerip']
+    interfaceip = request.json['interfaceip']
+    destip = request.json['destip']
+
+    vrf = request.json['vrf']
+    vrfname=request.json['vrfname']
+    commands=''
+    if vrf is True:
+        commands='traceroute vrf '+vrfname+' '+str(destip)
+    else:
+        commands='traceroute '+str(destip)+' source '+str(interfaceip)+' numeric'
+
+    obj = RouterCommand(routerip,commands,get_vars('tracerouterusername'),get_vars('tracerouterpass'))
+#    print obj.gencmdoutput() 
+    tempout=[]
+    tempout = obj.gencmdoutput()
+
+
+    tPath=tracePath(get_vars('orionurl'),get_vars('orionusername'),get_vars('orionpass'))
+
+    rPath = tPath.getNodeDetails(tempout,True)
+    nPath = tPath.getNodeDetails(tempout,False)
+    outvar=''
+    if isinstance(rPath, list):
+        for path in rPath:
+                outvar=outvar+path
+                outvar=outvar+"\n"
+    else:
+        outvar=rPath
+
+    outvar1=''
+    if isinstance(nPath,list):
+        for path in nPath:
+                outvar1=outvar1+path
+                outvar1=outvar1+"\n"
+    else:
+        outvar1=nPath
+
+
+    retdata={'value':outvar,'ipath':outvar1}
+    return jsonify(retdata), 201
+#    retdata={'value':tempout}
+#    return jsonify(retdata), 201
+
+
 
 if __name__ == '__main__':
     app.run(host='200.12.221.13',port=5555,debug=True)
