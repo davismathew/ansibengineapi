@@ -4,3 +4,4 @@ cling==2.3.2
 netaddr==0.7.18
 sqlalchemy==1.1.4
 ipcalc==1.99.0
+jtextfsm==0.3.1
