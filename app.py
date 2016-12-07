@@ -8,6 +8,7 @@ from tools_util.TracePath import tracePath
 from loadconfig import get_vars
 from ipam_utils.IPAMCheck import IPAMCheck
 from ios_command.RouterCommand import RouterCommand
+from SourceRouter.SourceRouterCheck import SourceRouterCheck
 import constants
 import os
 import stat
@@ -575,6 +576,8 @@ def runtrace():
     tempout=[]
     tempout = obj.gencmdoutput()
 
+    sourceroutobj=SourceRouterCheck()
+    lastIps=sourceroutobj.findSourceRouter(get_vars('sourcerouterip'),sourceip,get_vars('sourcerouterusername'),get_vars('sourcerouterpass'))
 
     tPath=tracePath(get_vars('orionurl'),get_vars('orionusername'),get_vars('orionpass'))
 
@@ -595,9 +598,12 @@ def runtrace():
                 outvar1=outvar1+"\n"
     else:
     	outvar1=nPath
+    outvar2=''
+
+    outvar2=lastIps
 
 
-    retdata={'value':outvar,'ipath':outvar1}
+    retdata={'value':outvar,'ipath':outvar1,'sourcerout':outvar2}
     return jsonify(retdata), 201
 #    retdata={'value':tempout}
 #    return jsonify(retdata), 201
@@ -625,6 +631,8 @@ def runinterfacetrace():
     tempout=[]
     tempout = obj.gencmdoutput()
 
+    sourceroutobj=SourceRouterCheck()
+    lastIps=sourceroutobj.findSourceRouter(get_vars('sourcerouterip'),interfaceip,get_vars('sourcerouterusername'),get_vars('sourcerouterpass'))
 
     tPath=tracePath(get_vars('orionurl'),get_vars('orionusername'),get_vars('orionpass'))
 
@@ -645,9 +653,11 @@ def runinterfacetrace():
                 outvar1=outvar1+"\n"
     else:
         outvar1=nPath
+    outvar2=''
 
+    outvar2=lastIps
 
-    retdata={'value':outvar,'ipath':outvar1}
+    retdata={'value':outvar,'ipath':outvar1,'sourcerout':outvar2}
     return jsonify(retdata), 201
 #    retdata={'value':tempout}
 #    return jsonify(retdata), 201

@@ -46,4 +46,10 @@ def get_vars(type):
         vars = config.get(constants.ENVIRONMENT, 'ipamrouterusername')
     elif type == 'ipamrouterpass':
         vars = config.get(constants.ENVIRONMENT, 'ipamrouterpass')
+    elif type == 'sourcerouterusername':
+        vars = config.get(constants.ENVIRONMENT, 'sourcerouterusername')
+    elif type == 'sourcerouterpass':
+        vars = config.get(constants.ENVIRONMENT, 'sourcerouterpass')
+    elif type == 'sourcerouterip':
+        vars = config.get(constants.ENVIRONMENT, 'sourcerouterip')
     return vars
